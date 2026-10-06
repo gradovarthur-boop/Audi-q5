@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0c"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png">
+<title>Моя Audi Q5</title>
+<style>
+body{margin:0;background:#0b0b0c;color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif}
+.app{max-width:520px;margin:auto;padding:calc(25px + env(safe-area-inset-top)) 18px calc(35px + env(safe-area-inset-bottom))}
+.ey{font-size:12px;letter-spacing:2px;color:#999;text-transform:uppercase}h1{font-size:34px;margin:7px 0 20px}
+.card{background:#171719;border:1px solid #29292d;border-radius:24px;padding:22px;margin:12px 0}
+.lab{font-size:13px;color:#aaa}.amount{font-size:38px;font-weight:750;margin:6px 0 15px}
+.progress{height:13px;background:#2b2b2f;border-radius:20px;overflow:hidden}.bar{height:100%;width:6.67%;background:#eee;border-radius:20px;transition:.3s}
+.row{display:flex;gap:15px;margin-top:15px}.stat{flex:1}.val{font-size:20px;font-weight:700;margin-top:5px}
+button{width:100%;padding:16px;border:0;border-radius:16px;font-size:16px;font-weight:700;margin-top:12px;background:#eee;color:#111}
+.sec{background:#29292d;color:#fff}.danger{background:#29191b;color:#ff9b9b}
+input{width:100%;box-sizing:border-box;margin-top:7px;padding:15px;border-radius:14px;border:1px solid #38383d;background:#101012;color:#fff;font-size:17px}
+h2{font-size:20px;margin:0 0 15px}.item{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid #2b2b2e}.empty{text-align:center;color:#888;padding:10px}
+small{display:block;color:#888;line-height:1.45;margin-top:12px}
+</style></head><body><div class="app">
+<div class="ey">Личный накопительный трекер</div><h1>Моя Audi Q5 🚘</h1>
+<section class="card"><div class="lab">Накоплено</div><div class="amount" id="cur"></div><div class="progress"><div class="bar" id="bar"></div></div>
+<div class="row"><div class="stat"><div class="lab">Прогресс</div><div class="val" id="pct"></div></div><div class="stat"><div class="lab">Осталось</div><div class="val" id="rem"></div></div></div></section>
+<section class="card"><h2>Пополнить фонд</h2><div class="lab">Сумма</div><input id="dep" type="number" value="50000" inputmode="decimal"><button onclick="add()">+ Пополнить</button></section>
+<section class="card"><h2>Параметры</h2><div class="lab">Цель</div><input id="goal" type="number" value="4500000"><div class="lab" style="margin-top:12px">Пополнение в месяц</div><input id="mon" type="number" value="50000"><button class="sec" onclick="settings()">Сохранить</button><div id="forecast"></div></section>
+<section class="card"><h2>История</h2><div id="hist"></div><button class="danger" onclick="resetAll()">Сбросить данные</button><small>Данные хранятся на этом устройстве. Это трекер накоплений и он не переводит деньги в банк.</small></section>
+</div>
+<script>
+let d=JSON.parse(localStorage.getItem('q5pwa')||'null')||{goal:4500000,cur:300000,mon:50000,h:[]};
+const f=n=>new Intl.NumberFormat('ru-RU').format(Math.round(n))+' ₽';
+function save(){localStorage.setItem('q5pwa',JSON.stringify(d))}
+function render(){let p=Math.min(100,d.cur/d.goal*100);cur.textContent=f(d.cur);pct.textContent=p.toFixed(1).replace('.',',')+'%';rem.textContent=f(Math.max(0,d.goal-d.cur));bar.style.width=p+'%';goal.value=d.goal;mon.value=d.mon;let m=d.mon?Math.ceil(Math.max(0,d.goal-d.cur)/d.mon):0;forecast.innerHTML=m?'<small>При '+f(d.mon)+' в месяц: примерно <b>'+m+' мес.</b> до цели.</small>':'<small>Укажи ежемесячный взнос для прогноза.</small>';hist.innerHTML=d.h.length?d.h.slice().reverse().map(x=>'<div class="item"><span>'+x.date+'</span><b>+'+f(x.n)+'</b></div>').join(''):'<div class="empty">Пополнений пока нет</div>'}
+function add(){let n=+dep.value;if(n>0){d.cur+=n;d.h.push({n,date:new Date().toLocaleDateString('ru-RU')});save();render()}}
+function settings(){d.goal=Math.max(1,+goal.value||4500000);d.mon=Math.max(0,+mon.value||0);save();render()}
+function resetAll(){if(confirm('Сбросить прогресс до 300 000 ₽?')){d={goal:4500000,cur:300000,mon:50000,h:[]};save();render()}}
+render(); if('serviceWorker'in navigator) navigator.serviceWorker.register('sw.js');
+</script></body></html>
